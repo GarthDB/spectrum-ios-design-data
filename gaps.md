@@ -1,0 +1,82 @@
+# iOS Override Import — Gap Report
+
+## Known vocabulary gaps
+
+- `elevated`/`elevatedIncreased` ColorSet slots: no foundation colorScheme or contrast mode maps to iOS's elevated surface concept (10 CSV rows skipped).
+- `lightIncreased`/`darkIncreased` naming maps to `contrast:"high"` — modeled here, but the increased→high crosswalk isn't registered anywhere else.
+- `pressed`/`down` state terms are advisory-only (state isn't hard-enforced by registry.rs) — they pass through untouched, not a resolved equivalence.
+- Typography/size rows (`Scale(FontSize(...))`, 155 rows) are out of scope for this importer; see the follow-up bead for font-size/letter-spacing import.
+
+## Unresolved rows (14)
+
+Rows whose target slug (or a specific colorScheme/contrast mode within it) has no foundation-token equivalent, so no manifest fragment was emitted.
+
+### disabled-background-color
+
+- Candidates tried: disabled-background-color
+- Source: figma-tokens.json
+
+### disabled-border-color
+
+- Candidates tried: disabled-border-color
+- Source: figma-tokens.json
+
+### disabled-content-color
+
+- Candidates tried: disabled-content-color
+- Source: figma-tokens.json
+
+### icon-color-primary-default
+
+- Candidates tried: icon-color-primary-default (light), icon-color-primary-default (dark)
+- Source: figma-tokens.json
+
+### icon-color-seafoam-primary-default
+
+- Candidates tried: icon-color-seafoam-primary-default (dark)
+- Source: figma-tokens.json
+
+### neutral-content-color-default
+
+- Candidates tried: neutral-content-color-default (light), neutral-content-color-default (dark)
+- Source: figma-tokens.json
+
+### neutral-subdued-content-color-default
+
+- Candidates tried: neutral-subdued-content-color-default (light), neutral-subdued-content-color-default (dark)
+- Source: figma-tokens.json
+
+### selected-background-color
+
+- Candidates tried: selected-background-color
+- Source: figma-tokens.json
+
+### selected-border-color
+
+- Candidates tried: selected-border-color
+- Source: figma-tokens.json
+
+### slider-text-disabled-content-color
+
+- Candidates tried: slider-text-disabled-content-color, disabled-content-color
+- Source: figma-tokens.json
+
+### slider-track-disabled-background-color
+
+- Candidates tried: slider-track-disabled-background-color, disabled-background-color
+- Source: figma-tokens.json
+
+### slider-track-disabled-background-fill-color
+
+- Candidates tried: slider-track-disabled-background-fill-color, disabled-background-color
+- Source: figma-tokens.json
+
+### switch-selected-emphasized-track-color
+
+- Candidates tried: switch-selected-emphasized-track-color
+- Source: switch.json
+
+### switch-selected-not-emphasized-track-color
+
+- Candidates tried: switch-selected-not-emphasized-track-color
+- Source: switch.json
