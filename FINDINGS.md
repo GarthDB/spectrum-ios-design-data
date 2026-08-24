@@ -33,7 +33,7 @@ The manifest+cascade engine this POC exercises already exists and is not part of
 
 * **`manifest.json`** — a real iOS Layer-2 manifest: `foundationVersion` pin, `include`/`exclude`
   query filters, two typed `overrides`, and `extensions.tokens` (net-new + contrast-mode tokens).
-* **`.design-data.toml`** — `type = "github"`, pinned to `@adobe/spectrum-tokens@15.0.0`, with a
+* **`.design-data.toml`** — `type = "github"`, pinned to `@adobe/spectrum-tokens@15.1.0`, with a
   **top-level `manifest` key** that cascades on top of the remotely-fetched foundation. This is the
   original intent, now functional: the POC surfaced gap #0 (the manifest cascade only applied to a
   `type = "path"` source), which was then fixed in `sdk/core` — see gap #0 below for the fix and the
@@ -65,7 +65,7 @@ of an existing token — there is no existing `contrast=high` record to target. 
 
 ## Manifest content, and why
 
-* **`foundationVersion`**: pinned to `@adobe/spectrum-tokens@15.0.0` — the current dataset, not
+* **`foundationVersion`**: pinned to `@adobe/spectrum-tokens@15.1.0` — the current dataset, not
   iOS's real `13.0.0`. `13.0.0` predates the cascade token format entirely (structured `name`
   objects, mode sets, UUIDs); a manifest against it isn't meaningful. **This version gap is itself
   a finding** — see [Gaps](#gaps-found) below.
@@ -95,7 +95,7 @@ All runs used the CLI built from this repo (`cargo build -p design-data-cli`, `f
 on by default for the CLI binary).
 
 **1. Remote pin + manifest cascade compose end-to-end.** With `.design-data.toml` at
-`type = "github"` (tag `@adobe/spectrum-tokens@15.0.0`) and a **top-level** `manifest` key, the CLI
+`type = "github"` (tag `@adobe/spectrum-tokens@15.1.0`) and a **top-level** `manifest` key, the CLI
 downloads and caches the tagged release tarball (pure HTTPS, no Node/git binary — the tarball ships
 the full dataset including `packages/tokens/schemas/**`), then applies the manifest on top of the
 fetched foundation. `query --filter "property=color" --count` against the fetched dataset returns
@@ -223,7 +223,7 @@ generalizes.
 
 ```sh
 # Run from the root of this repo (where .design-data.toml and manifest.json live).
-# .design-data.toml here uses `type = "github"` (tag @adobe/spectrum-tokens@15.0.0) with a
+# .design-data.toml here uses `type = "github"` (tag @adobe/spectrum-tokens@15.1.0) with a
 # top-level `manifest` key. The first run fetches + caches the release tarball (pure HTTPS);
 # set DESIGN_DATA_CACHE_DIR to a scratch dir so nothing lands in the repo.
 export DESIGN_DATA_CACHE_DIR=$(mktemp -d)
