@@ -21,7 +21,7 @@ is exactly the shape the source-config redesign in
 
 | File                | What it is                                                                        |
 | ------------------- | -------------------------------------------------------------------------------- |
-| `.design-data.toml` | Pins the foundation (`github` source, tag `@adobe/spectrum-tokens@15.0.0`) + top-level `manifest`. |
+| `.design-data.toml` | Pins the foundation (`github` source, tag `@adobe/spectrum-tokens@15.1.0`) + top-level `manifest`. |
 | `manifest.json`     | A real iOS Layer-2 manifest: `foundationVersion`, `include`/`exclude`, typed `overrides`, `extensions.tokens`. |
 | `FINDINGS.md`       | What was tested, what worked, and the model's real gaps (tracked as beads in the source repo). |
 
