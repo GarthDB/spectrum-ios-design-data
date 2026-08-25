@@ -219,6 +219,24 @@ should consult `resolved.tokens_root` when the positional PATH is left at its `.
 (c) repeat this exercise for Android to confirm the model (not just this one engine implementation)
 generalizes.
 
+## Real consumer
+
+Everything above proves the cascade JSON-to-JSON — a manifest cascading over a fetched
+foundation resolves correctly, but nothing consumed that output as real platform code. `consumer/`
+closes that gap: a minimal Swift executable (`consumer/generate.sh` + `swift run spectrum-demo`)
+reads resolved cascade output and renders it as truecolor terminal swatches — one foundation
+color, one of the three overrides (teal, visibly distinct from the foundation blue it sits on
+top of), and one `contrast=high` extension token. The cascade now reaches a rendered pixel, not
+just a JSON diff.
+
+**Android** is not built in this pass. The manifest/cascade engine
+(`TokenGraph::apply_platform_manifest`, `sdk/core/src/graph.rs`) is platform-agnostic — it
+consumes the same `manifest.json` and emits the same `resolve`/`query --format json` output
+regardless of consumer. An Android consumer would read that identical JSON; the only new work
+is the rendering side (Kotlin instead of Swift), not the cascade model. This iOS consumer is
+sufficient to demonstrate the model; Android is a codegen-target swap, not a model change,
+tracked separately if adoption work proceeds.
+
 ## Reproducing
 
 ```sh

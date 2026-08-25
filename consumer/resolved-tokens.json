@@ -1,0 +1,17 @@
+[
+  {
+    "name": "blue-900 (light)",
+    "value": "rgb(59, 99, 251)",
+    "provenance": "foundation"
+  },
+  {
+    "name": "seafoam-background-color-default (dark)",
+    "value": "rgba(9, 144, 120, 1.0)",
+    "provenance": "override"
+  },
+  {
+    "name": "accent-background-color-default (light, contrast=high)",
+    "value": "rgba(39, 77, 234, 1.0)",
+    "provenance": "extension"
+  }
+]
