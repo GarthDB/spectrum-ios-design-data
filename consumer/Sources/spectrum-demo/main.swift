@@ -28,6 +28,11 @@ struct ResolvedToken: Decodable {
     let provenance: String
 }
 
+struct ResolvedTokens: Decodable {
+    let sourceTag: String
+    let tokens: [ResolvedToken]
+}
+
 struct RGB {
     let r: Int
     let g: Int
@@ -66,11 +71,11 @@ guard let data = try? Data(contentsOf: jsonURL) else {
     exit(1)
 }
 
-let tokens = try! JSONDecoder().decode([ResolvedToken].self, from: data)
+let resolved = try! JSONDecoder().decode(ResolvedTokens.self, from: data)
 
 print("Spectrum iOS manifest cascade — resolved tokens\n")
-let nameWidth = tokens.map(\.name.count).max() ?? 0
-for token in tokens {
+let nameWidth = resolved.tokens.map(\.name.count).max() ?? 0
+for token in resolved.tokens {
     guard let rgb = parseRGB(token.value) else {
         print("  \(token.name): couldn't parse value \(token.value)")
         continue
@@ -79,4 +84,4 @@ for token in tokens {
     print("  \(paddedName)  \(swatch(rgb))  \(hex(rgb))  (\(token.provenance))")
 }
 
-print("\n→ resolved from manifest.json cascaded over the github source (@adobe/spectrum-tokens@15.0.0)")
+print("\n→ resolved from manifest.json cascaded over the github source (\(resolved.sourceTag))")

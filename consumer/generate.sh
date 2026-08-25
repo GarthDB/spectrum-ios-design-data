@@ -69,21 +69,27 @@ extension_record="$("$DESIGN_DATA_BIN" resolve accent-background-color --color-s
 # --- foundation: plain, untouched palette swatch (blue-900, light) ---
 foundation_record="$(query_by_uuid 3451c170-3e78-449b-86f2-8b7dbea24c1c)"
 
-python3 - "$override_record" "$extension_record" "$foundation_record" <<'PY' > "$REPO_ROOT/consumer/resolved-tokens.json"
+source_tag="$(grep '^tag' "$REPO_ROOT/.design-data.toml" | sed -E 's/.*"(.*)".*/\1/')"
+
+python3 - "$override_record" "$extension_record" "$foundation_record" "$source_tag" <<'PY' > "$REPO_ROOT/consumer/resolved-tokens.json"
 import json, sys
 
 override = json.loads(sys.argv[1])[0]
 extension = json.loads(sys.argv[2])
 foundation = json.loads(sys.argv[3])[0]
+source_tag = sys.argv[4]
 
 def entry(record, provenance, label):
     return {"name": label, "value": record["value"], "provenance": provenance}
 
-out = [
-    entry(foundation, "foundation", "blue-900 (light)"),
-    entry(override, "override", "seafoam-background-color-default (dark)"),
-    entry(extension, "extension", "accent-background-color-default (light, contrast=high)"),
-]
+out = {
+    "sourceTag": source_tag,
+    "tokens": [
+        entry(foundation, "foundation", "blue-900 (light)"),
+        entry(override, "override", "seafoam-background-color-default (dark)"),
+        entry(extension, "extension", "accent-background-color-default (light, contrast=high)"),
+    ],
+}
 print(json.dumps(out, indent=2))
 PY
 
