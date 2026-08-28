@@ -3,8 +3,14 @@
 ## Known vocabulary gaps
 
 - `elevated`/`elevatedIncreased` ColorSet slots: no foundation colorScheme or contrast mode maps to iOS's elevated surface concept (10 CSV rows skipped).
-- `lightIncreased`/`darkIncreased` naming maps to `contrast:"high"` — modeled here, but the increased→high crosswalk isn't registered anywhere else.
-- `pressed`/`down` state terms are advisory-only (state isn't hard-enforced by registry.rs) — they pass through untouched, not a resolved equivalence.
+- `lightIncreased`/`darkIncreased` naming maps to `contrast:"high"` — modeled here, and now
+  registered via `registry/platform-extensions/ios-contrast.json` (added to `manifest.json`'s
+  `extensions.platformExtensions`), so the increased→high crosswalk is discoverable, not just
+  implicit in the importer.
+- `pressed`/`down` state terms: `pressed` is now a registered alias of the foundation `active`
+  state (`packages/design-data/registry/states.json` upstream), with `down` cross-referenced via
+  `relatedTerms` — no iOS-side platform-extension needed since `pressed` isn't iOS-specific
+  vocabulary.
 - Typography/size rows (`Scale(FontSize(...))`, 155 rows) are out of scope for this importer; see the follow-up bead for font-size/letter-spacing import.
 
 The manifest spec has since grown a registered mechanism for exactly this kind of vocabulary
