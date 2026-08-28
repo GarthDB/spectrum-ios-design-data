@@ -14,4 +14,4 @@ manifest = "manifest.json"
 [source]
 type = "github"
 repo = "adobe/spectrum-design-data"
-tag = "@adobe/spectrum-tokens@15.1.0"
+tag = "@adobe/spectrum-tokens@15.2.0"

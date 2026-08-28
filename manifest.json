@@ -1,6 +1,6 @@
 {
   "specVersion": "1.0.0-draft",
-  "foundationVersion": "@adobe/spectrum-tokens@15.1.0",
+  "foundationVersion": "@adobe/spectrum-tokens@15.2.0",
   "include": [
     "property=color",
     "property=size",
