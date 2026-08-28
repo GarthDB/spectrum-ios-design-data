@@ -30,7 +30,7 @@ jobs:
       issues: write # required for open-issue
     steps:
       - uses: actions/checkout@v4
-      - uses: adobe/spectrum-design-data/.github/actions/validate@0f3e37f72d2132776f016c8bd405da0ef51605c9
+      - uses: adobe/spectrum-design-data/.github/actions/validate@1c6d6c5e9b6fcaa2eff6f7719a578b885e1d9b61
         with:
           dataset-path: .
           manifest: manifest.json
