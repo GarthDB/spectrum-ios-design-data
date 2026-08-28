@@ -32,12 +32,17 @@ The manifest+cascade engine this POC exercises already exists and is not part of
 ## What's here
 
 * **`manifest.json`** — a real iOS Layer-2 manifest: `foundationVersion` pin, `include`/`exclude`
-  query filters, two typed `overrides`, and `extensions.tokens` (net-new + contrast-mode tokens).
+  query filters, three typed `overrides`, `extensions.tokens` (net-new + contrast-mode tokens),
+  and an `extensions.components` entry for `tab-bar-ios`.
 * **`.design-data.toml`** — `type = "github"`, pinned to `@adobe/spectrum-tokens@15.1.0`, with a
   **top-level `manifest` key** that cascades on top of the remotely-fetched foundation. This is the
   original intent, now functional: the POC surfaced gap #0 (the manifest cascade only applied to a
   `type = "path"` source), which was then fixed in `sdk/core` — see gap #0 below for the fix and the
   source-strategy rationale.
+* **`components/tab-bar-ios.json`** — standalone component spec backing the manifest's
+  `extensions.components` entry.
+* **`registry/platform-extensions/ios-states.json`** — iOS-specific state registry used by the
+  overrides/extensions above.
 * This document — what was tested, what worked, and where the model has real gaps.
 
 ## Grounding: what real Spectrum iOS actually does
@@ -76,16 +81,18 @@ of an existing token — there is no existing `contrast=high` record to target. 
 * **`exclude`**: `colorScheme=wireframe` — iOS ships only light/dark (+ increased-contrast
   variants); the design-tool-only `wireframe` scheme (460 color tokens) is real overhead it never
   consumes.
-* **`overrides`**: the two clearest of the 11 real "true value change" rows —
-  `disabled-background-color` and `disabled-border-color` — targeted **by UUID**
-  (`a46de9d2-…`, `474ae56c-…`), each replacing the resolved literal color with iOS's actual new
-  value (`rgba(0, 0, 0, 0.03)`, `rgba(0, 0, 0, 0.15)`).
+* **`overrides`**: three of the 11 real "true value change" rows — the accent-color tokens
+  targeted **by UUID** (`736e4768-…`, `9a727140-…`, `df8f47d4-…`) — each replacing the
+  resolved literal color with iOS's actual teal value (`rgba(9, 144, 120, 1.0)`).
 * **`extensions.tokens`**: one representative net-new token (`accent-background-color-pressed`,
   a real "Custom token" row, light+dark) plus the `contrast=high` variants of
   `accent-background-color-default` (light+dark) — using the increased-contrast values from the
   real override log. This is the concrete resolution of the central question above: **increased-
   contrast values belong in `extensions`, not `overrides`**, because there is no existing record to
   override.
+* **`extensions.components`** *(new)*: the full `tab-bar-ios` component definition
+  (`components/tab-bar-ios.json`), exercising the same extension mechanism for platform-local
+  component specs, not just tokens.
 * **`extensions.formatting`**: `casing: camelCase`, matching iOS's real Swift symbol style
   (`accentBackgroundColorDefault`). Left minimal — see gaps.
 * **`extensions.relationships`** *(new — exercises #1389)*: one CTR linking the `tab-bar-ios`
@@ -132,13 +139,15 @@ records (light/dark) from `extensions.tokens`; `query --filter "property=color,c
 returns exactly the 2 `contrast=high` records. Neither exists in the foundation set.
 
 **4. Overrides land as new Platform-layer records, not in-place replacements.** After adding the
-UUID-targeted overrides, `query --filter "property=color,state=disabled"` count went from 7 to 9 —
-the original 2 alias records (`$ref` to `disabled-background-color`/`disabled-border-color`,
-untouched) are still present, **plus** 2 new synthetic records carrying the override's literal
-value. `query` shows the full graph across all layers; only `resolve()` / `resolve_property()`
-apply `Foundation < Platform < Product` precedence to pick a single winner. This is a genuine,
-useful distinction to document for anyone using `query` output to "count what a platform ships" —
-it will double-count overridden tokens unless you know to resolve, not just query.
+three UUID-targeted accent-color overrides, the query count for the targeted selector goes up
+by 3 — the original foundation records (untouched) are still present, **plus** 3 new synthetic
+records carrying the override's literal teal value. `query` shows the full graph across all
+layers; only `resolve()` / `resolve_property()` apply `Foundation < Platform < Product`
+precedence to pick a single winner. This is a genuine, useful distinction to document for
+anyone using `query` output to "count what a platform ships" — it will double-count overridden
+tokens unless you know to resolve, not just query. (This is now also documented in the
+manifest spec's `overrides` section, `packages/design-data-spec/spec/manifest.md` in the
+`adobe/spectrum-design-data` repo.)
 
 **5. Manifest re-validates clean under the stricter post-fix rules.** After #1365 and #1376
 landed, `design-data validate-manifest` (added by #1367) still reports `manifest.json is valid` —
