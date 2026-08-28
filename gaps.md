@@ -7,6 +7,18 @@
 - `pressed`/`down` state terms are advisory-only (state isn't hard-enforced by registry.rs) — they pass through untouched, not a resolved equivalence.
 - Typography/size rows (`Scale(FontSize(...))`, 155 rows) are out of scope for this importer; see the follow-up bead for font-size/letter-spacing import.
 
+The manifest spec has since grown a registered mechanism for exactly this kind of vocabulary
+mismatch: `extensions.namingExceptions` (add/remove overlay on the base naming-exceptions
+allowlist) and `extensions.platformExtensions` (already used here, in
+`registry/platform-extensions/ios-states.json`, for the `pressed`/`down` state-term crosswalk
+above). `manifest.json`'s `extensions.namingExceptions.add` now forward-declares three of the
+unresolved slugs below (`switch-selected-emphasized-track-color`,
+`switch-selected-not-emphasized-track-color`, `slider-track-disabled-background-fill-color`) as
+known-irregular legacy names pending remediation — the same intent as the foundation's own
+`naming-exceptions.json` allowlist, applied platform-locally. The `elevated`/`increased` and
+`disabled`/`selected` rows below still have no foundation equivalent at all (a data gap, not a
+naming-vocabulary one) and namingExceptions doesn't address that.
+
 ## Unresolved rows (14)
 
 Rows whose target slug (or a specific colorScheme/contrast mode within it) has no foundation-token equivalent, so no manifest fragment was emitted.

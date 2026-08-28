@@ -88,6 +88,24 @@ of an existing token — there is no existing `contrast=high` record to target. 
   override.
 * **`extensions.formatting`**: `casing: camelCase`, matching iOS's real Swift symbol style
   (`accentBackgroundColorDefault`). Left minimal — see gaps.
+* **`extensions.relationships`** *(new — exercises #1389)*: one CTR linking the `tab-bar-ios`
+  component's `background-color` property, in its "Selected tab background" context, to the
+  same accent-color foundation token this manifest already overrides to teal
+  (`736e4768-…`) — reuses a target already proven resolvable elsewhere in this manifest rather
+  than inventing a new one.
+* **`extensions.guidelines`** *(new — exercises #1387)*: one guideline (`tab-bar-ios`, category
+  `developing`) carrying the component's own description and `documentationUrl` as its `purpose`
+  block — matches `guideline.schema.json`'s required shape.
+* **`extensions.namingExceptions`** *(new — exercises #1390)*: `add` forward-declares three
+  legacy slugs from `gaps.md`'s unresolved-rows list
+  (`switch-selected-emphasized-track-color`, `switch-selected-not-emphasized-track-color`,
+  `slider-track-disabled-background-fill-color`) as known-irregular names pending remediation —
+  see `gaps.md` for the full cross-reference.
+* **`extensions.fields`** *(exercises #1388 — skipped)*: no real iOS-specific field concept
+  surfaced from this override log to ground a field declaration in. The SDK's own test fixture
+  for this extension type (`hapticStyle`, `sdk/core/src/manifest.rs:300`) is illustrative but not
+  drawn from iOS's actual data, so it's left out here rather than fabricated. Revisit if a real
+  need surfaces (e.g. from the font-size/letter-spacing importer follow-up).
 
 ## What was verified (commands run against real fetched/local data)
 
@@ -122,6 +140,11 @@ apply `Foundation < Platform < Product` precedence to pick a single winner. This
 useful distinction to document for anyone using `query` output to "count what a platform ships" —
 it will double-count overridden tokens unless you know to resolve, not just query.
 
+**5. Manifest re-validates clean under the stricter post-fix rules.** After #1365 and #1376
+landed, `design-data validate-manifest` (added by #1367) still reports `manifest.json is valid` —
+all 1118 `extensions.tokens` entries pass the new schema check, and both alias-targeted overrides
+pass the now-complete type-safety check. This POC's data holds up; nothing here needed repair.
+
 ## Gaps found (worth raising before Nov 20 adoption work)
 
 0. **RESOLVED — manifest hoisted to a top-level, source-independent config key; `github` source
@@ -151,34 +174,40 @@ it will double-count overridden tokens unless you know to resolve, not just quer
    now supports tag/branch/sha — so it strictly dominates npm for the cascade. `npm` and `git`
    remain stubbed, with errors that point at `type = "github"`; a real `gix` `git` source (for
    non-GitHub hosts) is YAGNI here.
-1. **Override targets by legacy slug silently no-op.** The manifest schema's `target` field is
-   documented as "enough information to identify the target token," and `resolve_override_targets`
-   (`sdk/core/src/graph.rs:903`) does fall back to a direct key lookup — but that lookup is against
-   the graph's internal key, **not** the `legacy_name_index` that maps human-readable legacy slugs
-   (`disabled-background-color`) to that key. Targeting by the plain legacy name failed with **no
-   error and no effect** — the override was simply dropped. Only a UUID (or a query expression
-   matching exactly one record) reliably works today. Given `legacyKey` isn't itself a supported
-   query key either (`spec/query.md#supported-keys`), a platform author has no legible way to
-   target "the token with legacy name X" — they need its UUID. **This is a real usability gap** for
-   anyone hand-authoring a manifest from an override log like iOS's, which speaks in legacy names.
-2. **Type-safety guard doesn't cover alias-only targets.** Cascade type-safety
-   ("overrides MUST NOT change resolved type") is enforced in `graph.rs:790-798` only when the
-   *matched foundation record itself* carries a literal `"value"` field to compare against. Both
-   override targets here are pure `$ref` aliases with no `"value"` field, so `orig_value` is `None`
-   and the check is skipped unconditionally. Verified directly: an override with `"value": 42`
-   (number) against the same alias-typed UUID applied with **no error**. Alias-typed tokens are the
-   large majority of the color corpus, so this gap likely covers most real overrides, not an edge
-   case.
+1. **RESOLVED — override targets by legacy slug no longer silently no-op.** The manifest schema's
+   `target` field is documented as "enough information to identify the target token," but
+   `resolve_override_targets` (`sdk/core/src/graph.rs:903`) originally fell back to a direct key
+   lookup against the graph's internal key, **not** the `legacy_name_index` that maps human-readable
+   legacy slugs (`disabled-background-color`) to that key — so targeting by the plain legacy name
+   failed with no error and no effect. **Fixed by #1356** (`fix(sdk): resolve override targets by
+   legacy slug`): override target resolution now reuses `resolve_alias_key`, preserving the
+   UUID → graph key → legacy-name resolution chain, so legacy-slug targets like `blue-100` resolve
+   correctly. A platform author can now hand-author a manifest straight from a legacy-named override
+   log without pre-resolving every target to a UUID.
+2. **RESOLVED — type-safety guard now covers alias-only targets.** Cascade type-safety
+   ("overrides MUST NOT change resolved type") was enforced in `graph.rs:790-798` only when the
+   *matched foundation record itself* carried a literal `"value"` field to compare against; both
+   override targets here are pure `$ref` aliases with no `"value"` field, so `orig_value` was `None`
+   and the check was skipped unconditionally — an override with `"value": 42` (number) against an
+   alias-typed UUID applied with no error. Alias-typed tokens are the large majority of the color
+   corpus, so this covered most real overrides, not an edge case. **Fixed by #1365**
+   (`fix(sdk): enforce cascade type-safety on alias-only override targets`) — type-safety now
+   resolves the alias chain to its underlying value type before comparing, closing the gap for the
+   majority of the corpus this manifest actually targets.
 3. **Foundation version pin predates the cascade format.** iOS's real, current pin
    (`@adobe/spectrum-tokens@13.0.0`) has no `packages/design-data/*` cascade dataset at all — it's
    pre-cascade legacy format. A real adoption manifest can't target that tag; iOS would need to
    move its pin forward to a cascade-format release (`15.0.0`+) as a prerequisite, independent of
    the manifest work itself.
-4. **`extensions.tokens` isn't schema-validated.** `manifest.schema.json`'s `extensions` property
-   only declares `formatting`; everything else (including `tokens`) is accepted purely via
-   `additionalProperties: true` — no shape validation before `apply_platform_manifest` consumes it.
-   A malformed extension token (bad `$schema`, missing `name` fields) fails silently or downstream,
-   not at manifest-validation time.
+4. **RESOLVED — `extensions.tokens` is now schema-validated.** `manifest.schema.json`'s
+   `extensions` property originally only declared `formatting`; everything else (including
+   `tokens`) was accepted purely via `additionalProperties: true` — no shape validation before
+   `apply_platform_manifest` consumed it, so a malformed extension token (bad `$schema`, missing
+   `name` fields) would fail silently or downstream, not at manifest-validation time.
+   **Fixed by #1376** (`fix(sdk): schema-validate extensions.tokens in platform manifest`):
+   `extensions.tokens` entries are now validated against the token-type schemas at manifest-apply
+   time. All 1118 `extensions.tokens` entries in this manifest re-validate clean under the stricter
+   check (see Verdict).
 5. **`extensions.formatting` is under-specified for iOS's actual naming.** Real iOS Swift symbols
    (`accentBackgroundColorDefault`) don't map cleanly from foundation's structured `name` object via
    `conceptOrder`/`casing`/`delimiter`/`abbreviations` alone — iOS's actual generator
@@ -188,20 +217,23 @@ it will double-count overridden tokens unless you know to resolve, not just quer
    are dataset-incomplete for the cascade and the `github` source now covers tag/branch/sha over
    pure HTTPS; both stubs error with a pointer to `type = "github"`. See gap #0's source-strategy
    note for the full rationale.
-7. **`query`/`resolve`'s positional `PATH` is independent of `.design-data.toml`'s `[source]`
-   root — passing `.` silently loads whatever `*.json` files happen to sit under the literal cwd,
-   not the configured dataset.** Discovered directly while writing this doc: an earlier run left
-   a stray fetched-tarball cache under this very directory (`sources/`, from testing gap #0's
-   `github` source, since deleted — never committed), and `query .` picked that up by accident,
-   producing a plausible-looking but coincidental result. With that directory gone, `query .` from
-   here recurses only into this dir's own `*.json` (picking up `manifest.json` itself) and returns
-   a handful of records — neither an error nor the intended dataset. The commands in
-   **Reproducing** below pass the real tokens directory explicitly for this reason. A platform
-   author following the spec's own convention of running `design-data query .` inside a manifest's
-   directory would silently get the wrong answer; `resolved.tokens_root` (tier 2/3 of
-   `data_source::resolve`) exists precisely to prevent this and should probably be consulted by
-   `query`/`resolve` when the CLI positional is left at its default rather than only for
-   mode\_sets/components/manifest.
+7. **RESOLVED — `query`/`resolve` now honor `.design-data.toml`'s `[source]` root when the
+   positional `PATH` is omitted.** `run_query` and `run_resolve` computed catalog paths via
+   `data_source::resolve()` but loaded the token dataset from the raw CLI `PATH` arg (defaulting to
+   `"."`), so a `[source]` block never actually took effect for these commands — passing `.` inside
+   a manifest's directory would silently load whatever `*.json` files happened to sit under the
+   literal cwd (this repo hit that directly: a stray fetched-tarball cache once produced a
+   plausible-looking but coincidental result). **Fixed by #1360**
+   (`fix(sdk): load query/resolve/legacy-output-cascaded tokens from resolved source`): both
+   commands now thread the optional `PATH` into `CliPathOverrides` and load from
+   `resolved.tokens_root` when no explicit path is given, matching the pattern `primer`/
+   `cache-build` already used (a regression suite in `sdk/cli/tests/cli_source.rs` covers all three
+   commands run with no positional arg against a configured source). Running `design-data query`
+   with no path from inside this repo now resolves the configured `github` source correctly; the
+   explicit `$TOKENS` workaround in **Reproducing** below is no longer required (passing `.`
+   explicitly is still the footgun this gap described — omit the path instead).
+   Note: `validate-dataset`'s cwd-relative scope is a separate, intentional design choice, not part
+   of this fix.
 
 ## Verdict
 
@@ -210,14 +242,11 @@ override log**, and the cascade pieces (query filtering, overrides, extensions) 
 documented. **Remote pinning now composes with the manifest cascade** (gap #0, fixed here): a
 `github`-pinned foundation + a top-level `manifest` key filters, overrides, and extends end-to-end,
 so the locked-in "use existing GitHub source" scoping decision is deliverable. The next tier of
-gaps — #1 (legacy-slug override targeting, bd `spectrum-design-data-8bkb`) and #2 (type-safety on
-alias targets, bd `spectrum-design-data-c3qw`) — are
-implementation gaps in `resolve_override_targets`, not spec problems, and are narrow, well-
-understood fixes. Recommend: (a) fix #1 and #2 in `sdk/core`; (b) fix gap #7 (bd
-`spectrum-design-data-jl7t`; `query`/`resolve`
-should consult `resolved.tokens_root` when the positional PATH is left at its `.` default);
-(c) repeat this exercise for Android to confirm the model (not just this one engine implementation)
-generalizes.
+gaps this POC surfaced — #1 (legacy-slug override targeting), #2 (type-safety on alias targets),
+#4 (`extensions.tokens` schema validation), and #7 (`query`/`resolve` source resolution) — have
+since all been fixed upstream (#1356, #1365, #1376, #1360 respectively; see each gap above), and
+the manifest re-validates clean under the stricter rules. Remaining recommendation: repeat this
+exercise for Android to confirm the model (not just this one engine implementation) generalizes.
 
 ## Real consumer
 
@@ -247,15 +276,14 @@ tracked separately if adoption work proceeds.
 export DESIGN_DATA_CACHE_DIR=$(mktemp -d)
 design-data resolve color   # File: manifest.json  → confirms the manifest cascades over the github source
 
-# For `query`, pass the fetched tokens dir explicitly — do NOT pass "." (see gap #7): the
-# positional PATH loads tokens directly and is independent of `.design-data.toml`'s `[source]`
-# root; only mode_sets/components/the manifest come from the resolved config. Run from this
-# directory so config resolution still finds and applies manifest.json on top.
-TOKENS="$DESIGN_DATA_CACHE_DIR"/sources/github/*/packages/design-data/tokens
-design-data query $TOKENS --filter "property=color" --count                       # 1136 (1587 without the manifest's exclude)
-design-data query $TOKENS --filter "property=color,state=pressed" --count         # extensions: 2 net-new contrast/pressed tokens
-design-data query $TOKENS --filter "property=color,contrast=high" --count         # extensions: 2 contrast-mode tokens
-design-data query $TOKENS --filter "property=color,state=disabled" --count        # overrides: 7 → 9 (see item 4)
+# `query`/`resolve` now honor `.design-data.toml`'s `[source]` root when PATH is omitted (gap #7,
+# fixed by #1360) — no need to pass the fetched tokens dir explicitly anymore. Still avoid passing
+# "." explicitly (that footgun is what gap #7 originally described); just omit the path.
+design-data query --filter "property=color" --count                       # 1136 (1587 without the manifest's exclude)
+design-data query --filter "property=color,state=pressed" --count         # extensions: 2 net-new contrast/pressed tokens
+design-data query --filter "property=color,contrast=high" --count         # extensions: 2 contrast-mode tokens
+design-data query --filter "property=color,state=disabled" --count        # overrides: 7 → 9 (see item 4)
+design-data validate-manifest                                             # manifest.json is valid (post-#1365/#1376 rules)
 ```
 
 (`design-data` = the `design-data-cli` binary built from `sdk/`, `moon run sdk:build`.)
