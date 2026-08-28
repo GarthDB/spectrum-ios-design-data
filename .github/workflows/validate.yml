@@ -1,0 +1,42 @@
+# Copyright 2026 Adobe. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions
+# and limitations under the License.
+
+# PR + push gate: this repo is a manifest-only overlay (foundation pinned
+# remotely via .design-data.toml, no local tokens/), so validate-dataset is
+# skipped -- validate-manifest is the applicable, blocking check. Foundation
+# drift is advisory here (see foundation-drift.yml for the blocking/issue path).
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      # Pinned to a commit (not @main) for reproducibility; includes the
+      # skip-dataset-validation input this repo's shape requires. Bump
+      # deliberately when adobe/spectrum-design-data's action changes.
+      - uses: adobe/spectrum-design-data/.github/actions/validate@1c6d6c5e9b6fcaa2eff6f7719a578b885e1d9b61
+        with:
+          dataset-path: .
+          manifest: manifest.json
+          skip-dataset-validation: "true"
+          drift-mode: warn # advisory: an unrelated PR shouldn't be blocked by foundation drift
+          open-issue: "false" # issues come from the scheduled foundation-drift workflow, not PRs
