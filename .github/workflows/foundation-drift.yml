@@ -1,0 +1,39 @@
+# Copyright 2026 Adobe. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions
+# and limitations under the License.
+
+# Catches the foundation moving between PRs (validate.yml only checks drift
+# when someone opens a PR here). Weekly + manual; opens a de-duped
+# "Foundation moved" issue when the pinned foundationVersion lags latest.
+name: Foundation drift
+
+on:
+  schedule:
+    - cron: "0 14 * * 1" # weekly, Monday 14:00 UTC
+  workflow_dispatch:
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # required for open-issue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: adobe/spectrum-design-data/.github/actions/validate@0f3e37f72d2132776f016c8bd405da0ef51605c9
+        with:
+          dataset-path: .
+          manifest: manifest.json
+          skip-dataset-validation: "true"
+          drift-mode: warn
+          open-issue: "true"
