@@ -53,9 +53,13 @@
     "introduced": "1.0.0-draft"
   },
   "accessibility": {
-    "intents": ["navigate"],
+    "intents": [
+      "navigate"
+    ],
     "focusable": true,
-    "keyboardIntents": ["navigate-items"],
+    "keyboardIntents": [
+      "navigate-items"
+    ],
     "wcag": [
       {
         "criterion": "2.1.1",
