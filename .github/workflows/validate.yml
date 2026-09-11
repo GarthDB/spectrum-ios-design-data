@@ -40,3 +40,8 @@ jobs:
           skip-dataset-validation: "true"
           drift-mode: warn # advisory: an unrelated PR shouldn't be blocked by foundation drift
           open-issue: "false" # issues come from the scheduled foundation-drift workflow, not PRs
+          # Pinned: the action's "latest" release lookup only scans the most
+          # recent 50 releases in adobe/spectrum-design-data, and design-data-cli
+          # releases are infrequent enough to scroll off that window (404 on
+          # download). Bump when a newer design-data-cli release ships.
+          cli-version: "0.12.1"

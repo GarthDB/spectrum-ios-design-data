@@ -37,3 +37,6 @@ jobs:
           skip-dataset-validation: "true"
           drift-mode: warn
           open-issue: "true"
+          # Pinned: see validate.yml -- "latest" release lookup misses
+          # design-data-cli once it ages out of the last 50 releases.
+          cli-version: "0.12.1"

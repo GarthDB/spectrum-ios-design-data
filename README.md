@@ -21,10 +21,9 @@ is exactly the shape the source-config redesign in
 
 | File                | What it is                                                                        |
 | ------------------- | -------------------------------------------------------------------------------- |
-| `.design-data.toml` | Pins the foundation (`github` source, tag `@adobe/spectrum-tokens@15.1.0`) + top-level `manifest`. |
-| `manifest.json`     | A real iOS Layer-2 manifest: `foundationVersion`, `include`/`exclude`, typed `overrides`, `extensions.tokens`, `extensions.components`. |
-| `components/`       | Standalone component spec (`tab-bar-ios.json`) backing the manifest's `extensions.components` entry. |
-| `registry/`         | iOS-specific state registry (`platform-extensions/ios-states.json`) used by the overrides/extensions. |
+| `.design-data.toml` | Pins the foundation (`github` source, tag `@adobe/spectrum-tokens@15.4.0`) + top-level `manifest`. |
+| `manifest.json`     | A real iOS Layer-2 manifest: `foundationVersion`, `include`/`exclude`, typed `overrides`, top-level `formatting`/`namingExceptions`. |
+| `extensions/`       | Platform-local additions, split one artifact per file (`tokens/`, `components/`, `platform-extensions/`, `relationships/`, `guidelines/`) — see `packages/design-data-spec/spec/manifest.md#extensions-directory` in the foundation repo. |
 | `FINDINGS.md`       | What was tested, what worked, and the model's real gaps (tracked as beads in the source repo). |
 | `consumer/`         | A minimal Swift consumer that reads resolved cascade output and renders it — see below. |
 

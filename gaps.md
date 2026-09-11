@@ -8,10 +8,10 @@
 - Typography/size rows (`Scale(FontSize(...))`, 155 rows) are out of scope for this importer; see the follow-up bead for font-size/letter-spacing import.
 
 The manifest spec has since grown a registered mechanism for exactly this kind of vocabulary
-mismatch: `extensions.namingExceptions` (add/remove overlay on the base naming-exceptions
-allowlist) and `extensions.platformExtensions` (already used here, in
-`registry/platform-extensions/ios-states.json`, for the `pressed`/`down` state-term crosswalk
-above). `manifest.json`'s `extensions.namingExceptions.add` now forward-declares three of the
+mismatch: top-level `namingExceptions` (add/remove overlay on the base naming-exceptions
+allowlist) and `extensions/platform-extensions/` (already used here, in
+`extensions/platform-extensions/ios-states.json`, for the `pressed`/`down` state-term crosswalk
+above). `manifest.json`'s `namingExceptions.add` now forward-declares three of the
 unresolved slugs below (`switch-selected-emphasized-track-color`,
 `switch-selected-not-emphasized-track-color`, `slider-track-disabled-background-fill-color`) as
 known-irregular legacy names pending remediation — the same intent as the foundation's own
